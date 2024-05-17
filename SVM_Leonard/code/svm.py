@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import roc_curve, confusion_matrix, auc, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import (roc_curve, confusion_matrix, auc, accuracy_score, precision_score, recall_score, f1_score,
+                             classification_report)
 from sklearn import svm
 from sklearn.inspection import permutation_importance
+import seaborn as sns
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -27,7 +29,15 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     tprs[-1][0] = 0.0
     aucs.append(roc_auc)
     axes[1].plot(fpr, tpr, lw=2, alpha=0.3, label=f'ROC {name} (AUC = {roc_auc:.2f})')
-    return tp, fp, tn, fn, accuracy, precision, recall, f1, roc_auc
+    print(classification_report(y_eval, y_pred))
+    cm = confusion_matrix(y_eval, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt="d", cmap='Blues')
+    plt.title('Confusion Matrix')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig("../plots/Confusion Matrix.png")
+    plt.close()
 
 
 data = pd.read_csv('../data/heart_2020_cleaned.csv',
@@ -117,9 +127,7 @@ clf = GridSearchCV(SVM, parameters, cv=5)
 clf.fit(X_train_scaled, y_train_sub)
 print(clf.best_estimator_.get_params())
 
-data_performance.loc[f'Test', :] = performance_evaluation(y_test_sub, X_test_scaled, clf, name='Test')
-data_performance.loc[f'Train', :] = performance_evaluation(y_train_sub, X_train_scaled, clf, name='Train')
-data_performance.to_csv('../tables/Data Performance')
+performance_evaluation(y_test_sub, X_test_scaled, clf, name='Test')
 
 result = permutation_importance(clf.best_estimator_, X_test_scaled, y_test_sub, n_repeats=2)
 
