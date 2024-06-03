@@ -84,8 +84,8 @@ roc_auc_best = auc(fpr_best, tpr_best)
 
 
 plt.figure(figsize=(8, 6))
-plt.plot(fpr_best, tpr_best, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_best)
-plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+plt.plot(fpr_best, tpr_best, color='b', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_best)
+plt.plot([0, 1], [0, 1], color='r', linestyle='--')
 plt.xlim([0.0, 1.0])
 plt.ylim([0.0, 1.05])
 plt.xlabel('False Positive Rate')

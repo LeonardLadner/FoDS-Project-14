@@ -68,8 +68,8 @@ print("Classification Report:\n", report)
 fpr, tpr, _ = roc_curve(y_test, y_pred_prob)
 roc_auc = roc_auc_score(y_test, y_pred_prob)
 plt.figure(figsize=(8, 6))
-plt.plot(fpr, tpr, color='darkorange', label=f'ROC curve (area = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+plt.plot(fpr, tpr, color='b', label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='r', linestyle='--')
 plt.xlim([0.0 , 1.0])
 plt.ylim([0.0 , 1.05])
 plt.xlabel('False Positive Rate')
@@ -82,10 +82,11 @@ plt.savefig("../output/Roc_Curve.png")
 feature_importance = best_rf.feature_importances_
 indices = np.argsort(feature_importance)[::-1]
 plt.figure(figsize=(12, 8))
-sns.barplot(x=feature_importance[indices], y=X_train.columns[indices])
+sns.barplot(x=X_train.columns[indices], y=feature_importance[indices])
 plt.title('Feature Importance')
 plt.xlabel('Relative Importance')
 plt.ylabel('Features')
+plt.tick_params(axis='x', rotation=90)
 plt.savefig("../output/Feauture_Importance.png")
 
 # Confusion Matrix
