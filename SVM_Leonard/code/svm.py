@@ -17,18 +17,11 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     y_pred = cla.best_estimator_.predict(X_eval)
     y_prob = cla.best_estimator_.predict_proba(X_eval)[:, 1]
 
-    accuracy = accuracy_score(y_eval, y_pred)
-    precision = precision_score(y_eval, y_pred)
-    recall = recall_score(y_eval, y_pred)
-    f1 = f1_score(y_eval, y_pred)
-    tn, fp, fn, tp = confusion_matrix(y_eval, y_pred).ravel()
-
     fpr, tpr, _ = roc_curve(y_eval, y_prob)
     roc_auc = auc(fpr, tpr)
     tprs.append(np.interp(mean_fpr, fpr, tpr))
     tprs[-1][0] = 0.0
     aucs.append(roc_auc)
-    axes[1].plot(fpr, tpr, lw=2, alpha=0.3, label=f'ROC {name} (AUC = {roc_auc:.2f})')
     print(classification_report(y_eval, y_pred))
     cm = confusion_matrix(y_eval, y_pred)
     plt.figure(figsize=(8, 6))
@@ -162,12 +155,9 @@ mean_tpr = np.mean(tprs, axis=0)
 mean_tpr[-1] = 1.0
 mean_auc = auc(mean_fpr, mean_tpr)
 std_auc = np.std(aucs)
-axes[1].plot(mean_fpr, mean_tpr, color='b', lw=2, alpha=0.8, label=f'Mean ROC (AUC = {mean_auc:.2f} ± {std_auc:.2f})')
+axes[1].plot(mean_fpr, mean_tpr, color='b', lw=2, alpha=0.8, label=f'ROC curve (area = {mean_auc:.2f})')
 std_tpr = np.std(tprs, axis=0)
-tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-axes[1].fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2, label='± 1 std. dev.')
-axes[1].set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05], title="ROC Curve", xlabel='False Positive Rate',
+axes[1].set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05], title="Receiver Operating Characteristic (ROC) Curve", xlabel='False Positive Rate',
             ylabel='True Positive Rate')
 axes[1].legend(loc="lower right")
 plt.tight_layout()
