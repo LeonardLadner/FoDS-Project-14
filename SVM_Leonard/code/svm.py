@@ -24,6 +24,7 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     aucs.append(roc_auc)
     print(classification_report(y_eval, y_pred))
     cm = confusion_matrix(y_eval, y_pred)
+    cm.to_csv('../.tables/confusion_matrix.csv')
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap='Blues')
     plt.title('Confusion Matrix')
@@ -96,10 +97,10 @@ mean_fpr = np.linspace(0, 1, 100)
 
 data_performance = pd.DataFrame(columns=['tp', 'fp', 'tn', 'fn', 'accuracy', 'precision', 'recall', 'f1', 'roc_auc'])
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-pos_patients = list(np.random.choice(X_train[y_train == 1].index, 600))
-neg_patients = list(np.random.choice(X_train[y_train == 0].index, 600))
+pos_patients = list(np.random.choice(X_train[y_train == 1].index, 1000))
+neg_patients = list(np.random.choice(X_train[y_train == 0].index, 1000))
 X_train_sub = X_train.loc[pos_patients+neg_patients]
 y_train_sub = y_train.loc[pos_patients+neg_patients]
 
@@ -116,15 +117,15 @@ X_train_scaled[num_cols] = sc.fit_transform(X_train_scaled[num_cols])
 X_test_scaled[num_cols] = sc.transform(X_test_scaled[num_cols])
 
 SVM = svm.SVC(probability=True, kernel='linear')
-clf = GridSearchCV(SVM, parameters, cv=5)
+clf = GridSearchCV(SVM, parameters, cv=5, scoring='accuracy')
 clf.fit(X_train_scaled, y_train_sub)
 print(clf.best_estimator_.get_params())
 
 performance_evaluation(y_test_sub, X_test_scaled, clf, name='Test')
 
-result = permutation_importance(clf.best_estimator_, X_test_scaled, y_test_sub, n_repeats=2)
+perm_importance = permutation_importance(clf.best_estimator_, X_test_scaled, y_test_sub, n_repeats=2)
 
-importance_df = pd.DataFrame({'Permutation Importance': result.importances_mean}, index=X.columns)
+importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
 
 print(data_performance)
 
