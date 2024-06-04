@@ -52,11 +52,19 @@ param_grid = {
 }
 
 #choose a smaller subset of data in order for KNN to work quicker
-X_train_small, _, y_train_small, _ = train_test_split(X_train, y_train, test_size=0.95, random_state=42)
+pos_patients = list(np.random.choice(X_train[y_train == 1].index, 1000))
+neg_patients = list(np.random.choice(X_train[y_train == 0].index, 1000))
+X_train_sub = X_train.loc[pos_patients+neg_patients]
+y_train_sub = y_train.loc[pos_patients+neg_patients]
+
+pos_patients_test = list(X_test[y_test == 1].index)
+neg_patients_test = list(np.random.choice(X_test[y_test == 0].index, len(pos_patients_test)))
+X_test_sub = X_test.loc[pos_patients_test+neg_patients_test]
+y_test_sub = y_test.loc[pos_patients_test+neg_patients_test]
 # Performing GridSearch with parallel processing
 with parallel_backend('threading', n_jobs=-1):
-    grid_search = GridSearchCV(pipeline, param_grid, cv=3, scoring='roc_auc', n_jobs=-1)
-    grid_search.fit(X_train_small, y_train_small)
+    grid_search = GridSearchCV(pipeline, param_grid, cv=5, scoring='accuracy')
+    grid_search.fit(X_train_sub, y_train_sub)
 
 
 print("Best parameters found:", grid_search.best_params_)
@@ -67,18 +75,18 @@ print("Best cross-validation score:", grid_search.best_score_)
 best_pipeline = grid_search.best_estimator_
 
 # Train the model
-best_pipeline.fit(X_train, y_train)
+best_pipeline.fit(X_train_sub, y_train_sub)
 
 # Predictions
-y_pred_best = best_pipeline.predict(X_test)
-y_prob_best = best_pipeline.predict_proba(X_test)[:, 1]  # probabilities for the positive class
+y_pred_best = best_pipeline.predict(X_test_sub)
+y_prob_best = best_pipeline.predict_proba(X_test_sub)[:, 1]  # probabilities for the positive class
 
 #classification report
-print(classification_report(y_test, y_pred_best))
+print(classification_report(y_test_sub, y_pred_best))
 
 
 # Preparation of data for ROC curve of test 
-fpr_best, tpr_best, thresholds_best = roc_curve(y_test, y_prob_best)
+fpr_best, tpr_best, thresholds_best = roc_curve(y_test_sub, y_prob_best)
 roc_auc_best = auc(fpr_best, tpr_best)
 
 
@@ -96,7 +104,7 @@ plt.savefig("../output/ROC Curve Best Model.png")
 plt.close()
 
 # Confusion Matrix
-cm_best = confusion_matrix(y_test, y_pred_best)
+cm_best = confusion_matrix(y_test_sub, y_pred_best)
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm_best, annot=True, fmt="d", cmap='Blues')
 plt.title('Confusion Matrix (Best Model)')
