@@ -22,9 +22,13 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     tprs.append(np.interp(mean_fpr, fpr, tpr))
     tprs[-1][0] = 0.0
     aucs.append(roc_auc)
-    print(classification_report(y_eval, y_pred))
+    class_report = classification_report(y_eval, y_pred, output_dict=True)
+    report_df = pd.DataFrame(class_report).transpose()
+    report_df.to_csv('../tables/Classification Report.csv', index=True)
+    print(class_report)
     cm = confusion_matrix(y_eval, y_pred)
-    cm.to_csv('../.tables/confusion_matrix.csv')
+    conf_matrix = pd.DataFrame(cm)
+    conf_matrix.to_csv('../tables/confusion_matrix.csv')
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap='Blues')
     plt.title('Confusion Matrix')
@@ -97,7 +101,7 @@ mean_fpr = np.linspace(0, 1, 100)
 
 data_performance = pd.DataFrame(columns=['tp', 'fp', 'tn', 'fn', 'accuracy', 'precision', 'recall', 'f1', 'roc_auc'])
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 pos_patients = list(np.random.choice(X_train[y_train == 1].index, 1000))
 neg_patients = list(np.random.choice(X_train[y_train == 0].index, 1000))

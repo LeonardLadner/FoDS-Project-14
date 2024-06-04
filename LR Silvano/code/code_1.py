@@ -25,7 +25,7 @@ X = data_encoded.drop('HeartDisease_Yes', axis=1)
 y = data_encoded['HeartDisease_Yes']
 
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42,stratify=y)
 
 pos_patients = list(np.random.choice(X_train[y_train == 1].index, 1000))
 neg_patients = list(np.random.choice(X_train[y_train == 0].index, 1000))

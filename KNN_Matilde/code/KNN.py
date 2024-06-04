@@ -28,7 +28,7 @@ data['HeartDisease'] = data['HeartDisease'].apply(lambda x: 1 if x == 'Yes' else
 # Splitting the dataset
 X = data.drop('HeartDisease', axis=1)
 y = data['HeartDisease']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 # Create a preprocessing pipeline
 preprocessor = ColumnTransformer(
