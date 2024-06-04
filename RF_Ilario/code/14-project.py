@@ -66,7 +66,11 @@ y_pred_prob = best_rf.predict_proba(X_test_sub)[:, 1]  # Probabilities for the p
 # Evaluating the model
 accuracy = accuracy_score(y_test_sub, y_pred)
 conf_matrix = confusion_matrix(y_test_sub, y_pred)
-report = classification_report(y_test_sub, y_pred)
+cm_df = pd.DataFrame(conf_matrix)
+cm_df.to_csv("../output/Confusion Matrix.csv")
+report = classification_report(y_test_sub, y_pred, output_dict=True)
+report_df = pd.DataFrame(report).transpose()
+report_df.to_csv('../output/Classification Report.csv', index=True)
 print("Best Parameters:", grid_search.best_params_)
 print("Accuracy:", accuracy)
 print("Confusion Matrix:\n", conf_matrix)
