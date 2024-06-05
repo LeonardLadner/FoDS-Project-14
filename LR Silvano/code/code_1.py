@@ -66,7 +66,12 @@ y_pred_prob = grid_search.predict_proba(X_test_sub)[:, 1]
 
 accuracy = accuracy_score(y_test_sub, y_pred)
 conf_matrix = confusion_matrix(y_test_sub, y_pred)
-report = classification_report(y_test_sub, y_pred)
+conf_matrix_df = pd.DataFrame(conf_matrix)
+conf_matrix_df.to_csv('../output/Confusion Matrix.csv')
+report = classification_report(y_test_sub, y_pred, output_dict=True)
+report_df = pd.DataFrame(report).transpose()
+report_df.to_csv('../output/Classification Report.csv', index=True)
+
 print("Accuracy:", accuracy)
 print("Confusion Matrix:\n", conf_matrix)
 print("Classification Report:\n", report)
@@ -75,7 +80,8 @@ print("Classification Report:\n", report)
 
 
 if 'l1' in grid_search.best_params_['penalty']:  
-    coefficients = pd.DataFrame(grid_search.best_estimator_.coef_.flatten(), index=X_train_sub.columns, columns=['Coefficients'])
+    coefficients = pd.DataFrame(grid_search.best_estimator_.coef_.flatten(), index=X_train_sub.columns,
+                                columns=['Coefficients'])
     coefficients = coefficients.sort_values(by='Coefficients', ascending=False)
     plt.figure(figsize=(20, 10))
     sns.barplot(x=coefficients['Coefficients'], y=coefficients.index)
