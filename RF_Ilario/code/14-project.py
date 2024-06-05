@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, roc_curve, roc_auc_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.inspection import permutation_importance
 import matplotlib.pyplot as plt
 import seaborn as sns
 from joblib import parallel_backend
@@ -70,7 +71,7 @@ cm_df = pd.DataFrame(conf_matrix)
 cm_df.to_csv("../output/Confusion Matrix.csv")
 report = classification_report(y_test_sub, y_pred, output_dict=True)
 report_df = pd.DataFrame(report).transpose()
-report_df.to_csv('../output/Classification Report.csv', index=True)
+report_df.to_csv('../output/Classification Report RF.csv', index=True)
 print("Best Parameters:", grid_search.best_params_)
 print("Accuracy:", accuracy)
 print("Confusion Matrix:\n", conf_matrix)
@@ -88,24 +89,29 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic (ROC) Curve')
 plt.legend(loc="lower right")
-plt.savefig("../output/Roc_Curve.png")
+plt.savefig("../output/Roc_Curve RF.png")
 
 # Feature Importance
-feature_importance = best_rf.feature_importances_
-indices = np.argsort(feature_importance)[::-1]
-plt.figure(figsize=(12, 8))
-sns.barplot(x=X_train_sub.columns[indices], y=feature_importance[indices])
-plt.title('Feature Importance')
-plt.xlabel('Relative Importance')
-plt.ylabel('Features')
+perm_importance = permutation_importance(best_rf, X_test_sub, y_test_sub, n_repeats=2)
+importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
+importance_df = importance_df.sort_values(by='Permutation Importance', ascending=False)
+importance_df.to_csv('../output/Permutation Importance RF.csv')
+plt.figure(figsize=(15,12))
+sns.barplot(x=importance_df.index, y='Permutation Importance', data=importance_df, color='b')
+plt.xlabel('Feature')
+plt.ylabel('Permutation Importance')
+plt.title('Permutation Importance')
 plt.tick_params(axis='x', rotation=90)
-plt.savefig("../output/Feauture_Importance.png")
+plt.subplots_adjust(bottom=0.3)
+plt.savefig('../output/Permutation Importance RF.png')
 
 # Confusion Matrix
 conf_matrix = confusion_matrix(y_test_sub, y_pred)
+conf_matrix_df = pd.DataFrame(conf_matrix)
+conf_matrix_df.to_csv('../output/Confusion Matrix RF.csv')
 plt.figure(figsize=(8, 6))
 sns.heatmap(conf_matrix, annot=True, fmt="d", cmap='Blues', square=True)
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
 plt.title('Confusion Matrix Heatmap')
-plt.savefig("../output/Confusion_Matrix.png")
+plt.savefig("../output/Confusion Matrix RF.png")

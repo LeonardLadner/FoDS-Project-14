@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (roc_curve, confusion_matrix, auc, accuracy_score, precision_score, recall_score, f1_score,
-                             classification_report)
+from sklearn.metrics import roc_curve, confusion_matrix, auc, classification_report
 from sklearn import svm
 from sklearn.inspection import permutation_importance
 import seaborn as sns
