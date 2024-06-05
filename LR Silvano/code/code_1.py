@@ -71,7 +71,6 @@ conf_matrix_df.to_csv('../output/Confusion Matrix.csv')
 report = classification_report(y_test_sub, y_pred, output_dict=True)
 report_df = pd.DataFrame(report).transpose()
 report_df.to_csv('../output/Classification Report.csv', index=True)
-
 print("Accuracy:", accuracy)
 print("Confusion Matrix:\n", conf_matrix)
 print("Classification Report:\n", report)

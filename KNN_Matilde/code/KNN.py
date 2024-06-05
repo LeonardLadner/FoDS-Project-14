@@ -82,6 +82,9 @@ y_pred_best = best_pipeline.predict(X_test_sub)
 y_prob_best = best_pipeline.predict_proba(X_test_sub)[:, 1]  # probabilities for the positive class
 
 #classification report
+report = classification_report(y_test_sub, y_pred_best, output_dict=True)
+report_df = pd.DataFrame(report).transpose()
+report_df.to_csv('../output/Classification Report.csv', index=True)
 print(classification_report(y_test_sub, y_pred_best))
 
 
@@ -105,6 +108,8 @@ plt.close()
 
 # Confusion Matrix
 cm_best = confusion_matrix(y_test_sub, y_pred_best)
+cm_best_df = pd.DataFrame(cm_best)
+cm_best_df.to_csv("../output/Confusion Matrix.csv")
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm_best, annot=True, fmt="d", cmap='Blues')
 plt.title('Confusion Matrix (Best Model)')
