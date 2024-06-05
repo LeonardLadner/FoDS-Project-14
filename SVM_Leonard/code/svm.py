@@ -25,7 +25,6 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     class_report = classification_report(y_eval, y_pred, output_dict=True)
     report_df = pd.DataFrame(class_report).transpose()
     report_df.to_csv('../tables/Classification Report.csv', index=True)
-    print(class_report)
     cm = confusion_matrix(y_eval, y_pred)
     conf_matrix = pd.DataFrame(cm)
     conf_matrix.to_csv('../tables/confusion_matrix.csv')
@@ -130,8 +129,8 @@ performance_evaluation(y_test_sub, X_test_scaled, clf, name='Test')
 perm_importance = permutation_importance(clf.best_estimator_, X_test_scaled, y_test_sub, n_repeats=2)
 
 importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
-
-print(data_performance)
+importance_df = importance_df.sort_values(by='Permutation Importance', ascending=False)
+print(importance_df)
 
 coefficients = clf.best_estimator_.coef_[0]
 coefficients_df = pd.DataFrame({'Coefficient': coefficients}, index=X.columns)
@@ -168,4 +167,4 @@ axes[1].legend(loc="lower right")
 plt.tight_layout()
 plt.subplots_adjust(bottom=0.3, wspace=0.2, hspace=0.4)
 plt.savefig('../plots/coefficients and roc_curve.png')
-plt.show()
+
