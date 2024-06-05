@@ -59,16 +59,6 @@ data = pd.read_csv('../data/heart_2020_cleaned.csv',
                        'SkinCancer': 'category'
                    })
 
-data['AgeCategory'] = data['AgeCategory'].cat.reorder_categories(new_categories=['18-24', '25-29', '30-34', '35-39',
-                                                                                 '40-44', '45-49', '50-54', '55-59',
-                                                                                 '60-64', '65-69', '70-74', '75-79',
-                                                                                 '80 or older'], ordered=True)
-data['Diabetic'] = data['Diabetic'].cat.reorder_categories(new_categories=['No', 'No, borderline diabetes',
-                                                                           'Yes (during pregnancy)', 'Yes'],
-                                                           ordered=True)
-data['GenHealth'] = data['GenHealth'].cat.reorder_categories(new_categories=['Excellent', 'Very good', 'Good', 'Fair',
-                                                                             'Poor'], ordered=True)
-
 print(data.isna().sum())
 
 data['HeartDisease'] = data['HeartDisease'].map({'Yes': 1, 'No': 0})
