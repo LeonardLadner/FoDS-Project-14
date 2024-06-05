@@ -131,7 +131,7 @@ print(importance_df)
 coefficients = clf.best_estimator_.coef_[0]
 coefficients_df = pd.DataFrame({'Coefficient': coefficients}, index=X.columns)
 coefficients_df = coefficients_df.sort_values(by='Coefficient', ascending=False)
-coefficients_df.to_csv('../tables/Coefficient Importance SVM.csv')
+coefficients_df.to_csv('../tables/Feature Coefficients SVM.csv')
 plt.figure(figsize=(15,12))
 sns.barplot(x=coefficients_df.index, y=coefficients_df['Coefficient'], color='b')
 plt.title("Feature Coefficients")

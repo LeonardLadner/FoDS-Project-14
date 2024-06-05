@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import roc_curve, auc, confusion_matrix, classification_report
+from sklearn.inspection import permutation_importance
 import seaborn as sns
 import math
 from sklearn.model_selection import GridSearchCV
@@ -21,9 +22,8 @@ categorical_cols = data.select_dtypes(include=['object']).columns.tolist()
 categorical_cols.remove('HeartDisease')  # Exclude the target variable from categorical columns
 numerical_cols = data.select_dtypes(exclude=['object']).columns.tolist()
 
-
 # Encode the target variable
-data['HeartDisease'] = data['HeartDisease'].apply(lambda x: 1 if x == 'Yes' else 0)
+data['HeartDisease'] = data['HeartDisease'].map({'Yes': 1, 'No': 0})
 
 # Splitting the dataset
 X = data.drop('HeartDisease', axis=1)
@@ -84,9 +84,22 @@ y_prob_best = best_pipeline.predict_proba(X_test_sub)[:, 1]  # probabilities for
 #classification report
 report = classification_report(y_test_sub, y_pred_best, output_dict=True)
 report_df = pd.DataFrame(report).transpose()
-report_df.to_csv('../output/Classification Report.csv', index=True)
+report_df.to_csv('../output/Classification Report KNN.csv', index=True)
 print(classification_report(y_test_sub, y_pred_best))
 
+# Permutation Importance
+perm_importance = permutation_importance(best_pipeline, X_test_sub, y_test_sub, n_repeats=2)
+importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
+importance_df = importance_df.sort_values(by='Permutation Importance', ascending=False)
+importance_df.to_csv('../output/Permutation Importance KNN.csv')
+plt.figure(figsize=(15,12))
+sns.barplot(x=importance_df.index, y='Permutation Importance', data=importance_df, color='b')
+plt.xlabel('Feature')
+plt.ylabel('Permutation Importance')
+plt.title('Permutation Importance')
+plt.tick_params(axis='x', rotation=90)
+plt.subplots_adjust(bottom=0.3)
+plt.savefig('../output/Permutation Importance KNN.png')
 
 # Preparation of data for ROC curve of test 
 fpr_best, tpr_best, thresholds_best = roc_curve(y_test_sub, y_prob_best)
@@ -103,19 +116,19 @@ plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic (ROC) Curve (Best Model)')
 plt.legend(loc="lower right")
-plt.savefig("../output/ROC Curve Best Model.png")
+plt.savefig("../output/ROC Curve Best Model KNN.png")
 plt.close()
 
 # Confusion Matrix
 cm_best = confusion_matrix(y_test_sub, y_pred_best)
 cm_best_df = pd.DataFrame(cm_best)
-cm_best_df.to_csv("../output/Confusion Matrix.csv")
+cm_best_df.to_csv("../output/Confusion Matrix KNN.csv")
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm_best, annot=True, fmt="d", cmap='Blues')
 plt.title('Confusion Matrix (Best Model)')
 plt.ylabel('Actual label')
 plt.xlabel('Predicted label')
-plt.savefig("../output/Confusion Matrix Best Model.png")
+plt.savefig("../output/Confusion Matrix Best Model KNN.png")
 plt.close()
 
 

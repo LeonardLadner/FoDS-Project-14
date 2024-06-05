@@ -14,12 +14,20 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # Load the data
 data = pd.read_csv("../data/heart_2020_cleaned.csv")
 
+# Preprocessing the data
+categorical_cols = data.select_dtypes(include=['object']).columns.tolist()
+categorical_cols.remove('HeartDisease')  # Exclude the target variable from categorical columns
+numerical_cols = data.select_dtypes(exclude=['object']).columns.tolist()
+
+# Encode target variable
+data['HeartDisease'] = data['HeartDisease'].map({'Yes': 1, 'No': 0})
+
 # Encoding categorical variables (if not already preprocessed)
-data_encoded = pd.get_dummies(data, drop_first=True)
+data_encoded = pd.get_dummies(data, columns=categorical_cols, drop_first=False)
 
 # Separate the target variable and independent variables
-X = data_encoded.drop('HeartDisease_Yes', axis=1)  
-y = data_encoded['HeartDisease_Yes']
+X = data_encoded.drop('HeartDisease', axis=1)
+y = data_encoded['HeartDisease']
 
 # Splitting the dataset into training and testing sets and creating balanced subsets of the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
@@ -34,7 +42,7 @@ negative_patients_test = list(np.random.choice(X_test[y_test == 0].index, len(po
 X_test_sub = X_test.loc[positive_patients_test+negative_patients_test]
 y_test_sub = y_test.loc[positive_patients_test+negative_patients_test]
 
-# Standardizing numeric features (Random Forest does not require feature scaling but it won't hurt)
+# Standardizing numeric features (Random Forest does not require feature scaling, but it won't hurt)
 numeric_features = X.select_dtypes(include=['float64', 'int']).columns.tolist()
 scaler = StandardScaler()
 X_train_sub[numeric_features] = scaler.fit_transform(X_train_sub[numeric_features])
@@ -67,8 +75,6 @@ y_pred_prob = best_rf.predict_proba(X_test_sub)[:, 1]  # Probabilities for the p
 # Evaluating the model
 accuracy = accuracy_score(y_test_sub, y_pred)
 conf_matrix = confusion_matrix(y_test_sub, y_pred)
-cm_df = pd.DataFrame(conf_matrix)
-cm_df.to_csv("../output/Confusion Matrix.csv")
 report = classification_report(y_test_sub, y_pred, output_dict=True)
 report_df = pd.DataFrame(report).transpose()
 report_df.to_csv('../output/Classification Report RF.csv', index=True)
@@ -91,7 +97,7 @@ plt.title('Receiver Operating Characteristic (ROC) Curve')
 plt.legend(loc="lower right")
 plt.savefig("../output/Roc_Curve RF.png")
 
-# Feature Importance
+# Permutation Importance
 perm_importance = permutation_importance(best_rf, X_test_sub, y_test_sub, n_repeats=2)
 importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
 importance_df = importance_df.sort_values(by='Permutation Importance', ascending=False)
