@@ -24,16 +24,16 @@ def performance_evaluation(y_eval, X_eval, cla, name='Name'):
     aucs.append(roc_auc)
     class_report = classification_report(y_eval, y_pred, output_dict=True)
     report_df = pd.DataFrame(class_report).transpose()
-    report_df.to_csv('../tables/Classification Report.csv', index=True)
+    report_df.to_csv('../tables/Classification Report SVM.csv', index=True)
     cm = confusion_matrix(y_eval, y_pred)
     conf_matrix = pd.DataFrame(cm)
-    conf_matrix.to_csv('../tables/confusion_matrix.csv')
+    conf_matrix.to_csv('../tables/Confusion Matrix SVM.csv')
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt="d", cmap='Blues')
     plt.title('Confusion Matrix')
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
-    plt.savefig("../plots/Confusion Matrix.png")
+    plt.savefig("../plots/Confusion Matrix SVM.png")
     plt.close()
 
 
@@ -92,8 +92,6 @@ print(y.sum())
 
 parameters = {'C': [1, 10, 100], 'gamma': [0.01, 0.1]}
 
-fig, axes = plt.subplots(1, 2, figsize=(16, 8))
-
 tprs = []
 aucs = []
 mean_fpr = np.linspace(0, 1, 100)
@@ -130,41 +128,45 @@ perm_importance = permutation_importance(clf.best_estimator_, X_test_scaled, y_t
 
 importance_df = pd.DataFrame({'Permutation Importance': perm_importance.importances_mean}, index=X.columns)
 importance_df = importance_df.sort_values(by='Permutation Importance', ascending=False)
+importance_df.to_csv('../tables/Permutation Importance SVM.csv')
+plt.figure(figsize=(15,12))
+sns.barplot(x=importance_df.index, y='Permutation Importance', data=importance_df, color='b')
+plt.xlabel('Feature')
+plt.ylabel('Permutation Importance')
+plt.title('Permutation Importance')
+plt.tick_params(axis='x', rotation=90)
+plt.subplots_adjust(bottom=0.3)
+plt.savefig('../plots/Permutation Importance SVM.png')
 print(importance_df)
 
 coefficients = clf.best_estimator_.coef_[0]
 coefficients_df = pd.DataFrame({'Coefficient': coefficients}, index=X.columns)
+coefficients_df = coefficients_df.sort_values(by='Coefficient', ascending=False)
+coefficients_df.to_csv('../tables/Coefficient Importance SVM.csv')
+plt.figure(figsize=(15,12))
+sns.barplot(x=coefficients_df.index, y=coefficients_df['Coefficient'], color='b')
+plt.title("Feature Coefficients")
+plt.xlabel('Feature')
+plt.ylabel("Coefficient Value")
+plt.xticks(rotation=90, ha='center')
+plt.subplots_adjust(bottom=0.3)
+plt.savefig('../plots/Feature Coefficients SVM.png')
 print(coefficients_df)
 
-combined_df = pd.merge(coefficients_df, importance_df, right_index=True, left_index=True)
-combined_df = combined_df.sort_values(by='Coefficient', ascending=False)
-combined_df.to_csv('../tables/Coefficients and Permutation Importance')
-print(combined_df)
-
-normalized_importance = (combined_df['Permutation Importance'] - combined_df['Permutation Importance'].min()) / \
-                        (combined_df['Permutation Importance'].max() - combined_df['Permutation Importance'].min())
-
-bars = axes[0].bar(combined_df.index, combined_df['Coefficient'], color='blue')
-for bar, alpha in zip(bars, normalized_importance):
-    bar.set_alpha(alpha)
-
-axes[0].set_xlabel('Coefficient Value')
-axes[0].set_title('Feature Coefficients stratified by Permutation Importance')
-axes[0].tick_params(axis='x', rotation=90)
-plt.tight_layout()
-plt.subplots_adjust(bottom=0.7, wspace=0.2)
-
-axes[1].plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', alpha=0.8)
+plt.figure(figsize=(12,8))
+plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', alpha=0.8)
 mean_tpr = np.mean(tprs, axis=0)
 mean_tpr[-1] = 1.0
 mean_auc = auc(mean_fpr, mean_tpr)
 std_auc = np.std(aucs)
-axes[1].plot(mean_fpr, mean_tpr, color='b', lw=2, alpha=0.8, label=f'ROC curve (area = {mean_auc:.2f})')
+plt.plot(mean_fpr, mean_tpr, color='b', lw=2, alpha=0.8, label=f'ROC curve (area = {mean_auc:.2f})')
 std_tpr = np.std(tprs, axis=0)
-axes[1].set(xlim=[-0.05, 1.05], ylim=[-0.05, 1.05], title="Receiver Operating Characteristic (ROC) Curve", xlabel='False Positive Rate',
-            ylabel='True Positive Rate')
-axes[1].legend(loc="lower right")
+plt.xlim([-0.05, 1.05])
+plt.ylim([-0.05, 1.05])
+plt.title("Receiver Operating Characteristic (ROC) Curve")
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.legend(loc="lower right")
 plt.tight_layout()
-plt.subplots_adjust(bottom=0.3, wspace=0.2, hspace=0.4)
-plt.savefig('../plots/coefficients and roc_curve.png')
+plt.savefig('../plots/ROC Curve SVM.png')
 
