@@ -160,7 +160,7 @@ plt.savefig('../plots/Feature Coefficients SVM.png')
 print(coefficients_df)
 
 # Plot the ROC curve
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(8, 6))
 plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r', alpha=0.8)
 mean_tpr = np.mean(tprs, axis=0)
 mean_tpr[-1] = 1.0
